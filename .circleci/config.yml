@@ -60,7 +60,7 @@ executors:
         entrypoint: ["/bin/sh"]
   r-21:
     docker:
-      - image: erlang:21-alpine
+      - image: erlang:21.2.3-alpine
         entrypoint: ["/bin/sh"]
   r-21_2:
     docker:
