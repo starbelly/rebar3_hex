@@ -324,5 +324,6 @@ workflows:
       - compile:
           otp: r-21
       - ct:
+          otp: r-21
           requires:
             - compile
