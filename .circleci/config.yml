@@ -60,7 +60,7 @@ executors:
         entrypoint: ["/bin/sh"]
   r-21:
     docker:
-      - image: erlang:21
+      - image: erlang:21-alpine
         entrypoint: ["/bin/sh"]
   r-21_2:
     docker:
@@ -322,4 +322,7 @@ workflows:
   build-test:
     jobs:
       - compile:
-          otp: erlang
+          otp: r-21
+      - rebar3/ct:
+          requires:
+            - rebar3/compile
