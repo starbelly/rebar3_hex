@@ -323,6 +323,6 @@ workflows:
     jobs:
       - compile:
           otp: r-21
-      - rebar3/ct:
+      - ct:
           requires:
             - rebar3/compile
