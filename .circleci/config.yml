@@ -1,10 +1,12 @@
 version: 2.1
 orbs:
-  rebar3: tsloughter/rebar3@0.5.4
+  rebar3: starbelly/rebar_orb
 workflows:
   build-test:
-    jobs:
+      jobs:
       - rebar3/compile
+          otp: erlang:18
       - rebar3/ct:
           requires:
             - rebar3/compile
+
