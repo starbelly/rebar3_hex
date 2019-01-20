@@ -12,7 +12,7 @@ executors:
         entrypoint: ["/bin/sh"]
   r-18:
     docker:
-      - image: "18-alpine"
+      - image: "18"
         entrypoint: ["/bin/sh"]
   r-18_3:
     docker:
