@@ -322,4 +322,4 @@ workflows:
   build-test:
     jobs:
       - compile:
-          otp: r-18
+          otp: erlang
