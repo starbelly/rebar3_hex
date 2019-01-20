@@ -5,7 +5,7 @@ workflows:
   build-test:
       jobs:
       - rebar3/compile
-          otp: erlang:18
+          otp: r-18
       - rebar3/ct:
           requires:
             - rebar3/compile
