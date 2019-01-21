@@ -1,329 +1,75 @@
 version: 2.1
 
-executors:
-  erlang:
-    parameters:
-      version:
-        description: The Erlang/OTP docker image tag to use.
-        type: string
-        default: "21.2-alpine"
-    docker:
-      - image: erlang:<<parameters.version>>
-        entrypoint: ["/bin/sh"]
-  r-18:
-    docker:
-      - image: "18"
-        entrypoint: ["/bin/sh"]
-  r-18_3:
-    docker:
-      - image: erlang:18.3
-        entrypoint: ["/bin/sh"]
-  r-18_3_4:
-    docker:
-      - image: erlang:18.3.4
-        entrypoint: ["/bin/sh"]
-  r-18_3_4_11:
-    docker:
-      - image: erlang:18.3.4.11
-        entrypoint: ["/bin/sh"]
-  r-19:
-    docker:
-      - image: erlang:19
-        entrypoint: ["/bin/sh"]
-  r-19_3:
-    docker:
-      - image: erlang:19.3
-        entrypoint: ["/bin/sh"]
-  r-19_3_6:
-    docker:
-      - image: erlang:19.3.6
-        entrypoint: ["/bin/sh"]
-  r-19_3_6_13:
-    docker:
-      - image: erlang:19.3.6.13
-        entrypoint: ["/bin/sh"]
-  r-20:
-    docker:
-      - image: erlang:20
-        entrypoint: ["/bin/sh"]
-  r-20_3:
-    docker:
-      - image: erlang:20.3
-        entrypoint: ["/bin/sh"]
-  r-20_3_8:
-    docker:
-      - image: erlang:20.3.8
-        entrypoint: ["/bin/sh"]
-  r-20_3_8_17:
-    docker:
-      - image: erlang:20.2.8.17
-        entrypoint: ["/bin/sh"]
-  r-21:
-    docker:
-      - image: erlang:21.2.3-alpine
-        entrypoint: ["/bin/sh"]
-  r-21_2:
-    docker:
-      - image: erlang:21.2
-        entrypoint: ["/bin/sh"]
-  r-21_2_2:
-    docker:
-      - image: erlang:21.2.2
-        entrypoint: ["/bin/sh"]
-  r-21_2_3:
-    docker:
-      - image: erlang:21.2.3
-        entrypoint: ["/bin/sh"]
+orbs:
+  telemetry:
+    orbs:
+      rebar3: tsloughter/rebar3@0.5.5
 
-
-commands:
-  install_ca_certs:
-    description: |
-      The package ca-certificates is required for CircleCI to store caches and it is currently removed from the final Erlang docker image, so we must install it at the start of a job for now.
-    parameters:
-      pkg_install_cmd:
-        description: |
-          The command for installing a package on the distro being used. The default is apk for Alpine, which is the default tag used in the executor.
-        type: string
-        default: apk add --no-cache
-    steps:
-      - run:
-          command: <<parameters.pkg_install_cmd>> ca-certificates
-
-  with_deps_cache:
-    description: |
-      Run steps with the dependency cache restored and then save it again if changed.
-    parameters:
-      steps:
-        type: steps
-    steps:
-      - restore_cache:
-          keys:
-            - rebar-lock-{{ checksum "rebar.lock" }}
-            - hex-packages
-
-      - steps: << parameters.steps >>
-
-      - save_cache:
-          key: rebar-lock-{{ checksum "rebar.lock" }}
-          paths:
-            - ~/project/_build/default/lib
-            - ~/project/_build/default/plugins
-
-      - save_cache:
-          key: hex-packages
-          paths:
-            - ~/.cache/rebar3/hex/default/packages
-
-  with_plt_cache:
-    description: |
-      Run steps with the plt cache restored and then save it again.
-    parameters:
-      steps:
-        type: steps
-    steps:
-      - restore_cache:
-          keys:
-            - erlang-plt-{{ checksum "rebar.lock" }}
-
-      - steps: << parameters.steps >>
-
-      - save_cache:
-          # need a better key to use since it should be based on the otp version as well
-          key: erlang-plt-{{ checksum "rebar.lock" }}
-          paths:
-            - ~/project/_build/default/rebar3_*_plt
-            - ~/.cache/rebar3/rebar3_*_plt
-
-  on_fail_store_crashdump:
-    description: |
-      If a job fails this command will copy the rebar3 crashdump file to the artifacts store so you can view it after a failed job.
-    parameters:
-      cmd:
-        description: A unique name, like the command that is running, in case there are multiple dumps.
-        type: string
-    steps:
-      - store_artifacts:
-          path: ~/project/rebar3.crashdump
-          destination: <<parameters.cmd>>_rebar3_crashdump.txt
-          when: on_fail
-
-  compile:
-    description: |
-      Compile the project.
-    steps:
-      - run:
-          command: rebar3 compile
-
-  dialyzer:
-    description: |
-      Run dialyzer.
-    steps:
-      - run:
-          command: rebar3 dialyzer
-
-  xref:
-    description: |
-      Run xref.
-    steps:
-      - run:
-          command: rebar3 xref
-  ct:
-    description: |
-      Run common test suites.
-    steps:
-      - run:
-          command: rebar3 ct
-
-  eunit:
-    description: |
-      Run eunit tests.
-    steps:
-      - run:
-          command: rebar3 eunit
-
-  lint:
-    description: |
-      Lints with elvis.
-    steps:
-      - run:
-          command: rebar3 lint
-
-  cover:
-    description: |
-      Run cover.
-    steps:
-      - run:
-          command: rebar3 cover
-
-jobs:
-  compile:
-    parameters:
-      otp:
-        type: executor
-        default: erlang
-    executor: << parameters.otp >>
-    steps:
-      - install_ca_certs
-      - checkout
-      - with_deps_cache:
-          steps:
-            - compile
-      - on_fail_store_crashdump:
-          cmd: compile
-  lint:
-    executor: erlang
-    steps:
-      - install_ca_certs
-      - checkout
-      - with_deps_cache:
-          steps:
-            - lint
-      - on_fail_store_crashdump:
-          cmd: lint
-  eunit:
-    parameters:
-      otp:
-        type: executor
-        default: erlang
-    executor: << parameters.otp >>
-    steps:
-      - install_ca_certs
-      - checkout
-      - with_deps_cache:
-          steps:
-            - eunit
-      - on_fail_store_crashdump:
-          cmd: eunit
-      # for cover
-      - persist_to_workspace:
-          root: ~/project/
-          paths:
-            - _build/test/
-  dialyzer:
-    parameters:
-      otp:
-        type: executor
-        default: erlang
-    executor: << parameters.otp >>
-    steps:
-      - install_ca_certs
-      - checkout
-      - with_deps_cache:
-          steps:
-            - with_plt_cache:
-                steps:
-                  - dialyzer
-      - on_fail_store_crashdump:
-          cmd: dialyzer
-  xref:
-    parameters:
-      otp:
-        type: executor
-        default: erlang
-    executor: << parameters.otp >>
-    steps:
-      - install_ca_certs
-      - checkout
-      - with_deps_cache:
-          steps:
-            - xref
-      - on_fail_store_crashdump:
-          cmd: xref
-  ct:
-    parameters:
-      otp:
-        type: executor
-        default: executor
-    executor: << parameters.otp >>
-    steps:
-      - install_ca_certs
-      - checkout
-      - with_deps_cache:
-          steps:
-            - ct
-      - on_fail_store_crashdump:
-          cmd: ct
-      - store_test_results:
-          path: ~/project/_build/test/logs/
-      - store_artifacts:
-          path: ~/project/_build/test/logs
-          destination: common_test
-
-      # for cover
-      - persist_to_workspace:
-          root: ~/project/
-          paths:
-            - _build/test/
-  cover:
-    parameters:
-      otp:
-        type: executor
-        default: erlang
-    executor: << parameters.otp >>
-    steps:
-      - install_ca_certs
-      - checkout
-      - attach_workspace:
-          at: ~/project/
-      - with_deps_cache:
-          steps:
-            - cover
-      - persist_to_workspace:
-          root: ~/project/
-          paths:
-            - _build/test/
-      - on_fail_store_crashdump:
-          cmd: cover
-      - store_artifacts:
-          path: ~/project/_build/test/cover
-          destination: cover
-workflows:
-  build-test:
     jobs:
-      - compile:
-          otp: r-21
-      - ct:
-          otp: r-21
-          requires:
-            - compile
+      build_and_test:
+        parameters:
+          version:
+            description: The Erlang/OTP docker image tag to use.
+            type: string
+          pkg_install_cmd:
+            type: string
+            default: apk add --no-cache
+          codecov_flag:
+            description: String the coverage reports are grouped by
+            type: string
+        executor:
+          name: rebar3/erlang
+          version: <<parameters.version>>
+        steps:
+          - rebar3/install_ca_certs:
+              pkg_install_cmd: <<parameters.pkg_install_cmd>>
+          - checkout
+          - rebar3/with_deps_cache:
+              cache_key_postfix: -<<parameters.version>>
+              steps:
+                - rebar3/compile
+                - rebar3/dialyzer
+                - rebar3/xref
+                - rebar3/ct
+
+                - store_test_results:
+                    path: ~/project/_build/test/logs/
+                - store_artifacts:
+                    path: ~/project/_build/test/logs
+                    destination: common_test
+
+                - rebar3/cover
+                - run: rebar3 as test covertool generate
+                - run:
+                    name: Install bash and curl
+                    command: <<parameters.pkg_install_cmd>> bash curl
+                - run:
+                    name: Upload coverage report
+                    shell: /bin/bash
+                    command: |
+                      bash <(curl -s https://codecov.io/bash) \
+                        -f  _build/test/covertool/telemetry.covertool.xml \
+                        -F <<parameters.codecov_flag>>
+
+workflows:
+  build_and_test:
+    jobs:
+      - telemetry/build_and_test:
+          name: "otp-21"
+          version: "21-alpine"
+          codecov_flag: "otp21"
+      - telemetry/build_and_test:
+          name: "otp-20"
+          version: "20-alpine"
+          codecov_flag: "otp20"
+      - telemetry/build_and_test:
+          name: "otp-19"
+          version: "19"
+          codecov_flag: "otp19"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - telemetry/build_and_test:
+          name: "otp-18"
+          version: "18"
+          codecov_flag: "otp18"
+          pkg_install_cmd: "apt-get update && apt-get install"
+
