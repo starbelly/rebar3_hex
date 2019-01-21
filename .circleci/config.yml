@@ -56,21 +56,71 @@ workflows:
   build_and_test:
     jobs:
       - rebar3_hex/build_and_test:
+          name: "otp-21.2.3"
+          version: "21.2.3"
+          codecov_flag: "otp21.2.3"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
+          name: "otp-21.2.2"
+          version: "21.2.2"
+          codecov_flag: "otp21.2.2"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
+          name: "otp-21.2"
+          version: "21.2"
+          codecov_flag: "otp21.2"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
           name: "otp-21"
           version: "21-alpine"
           codecov_flag: "otp21"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
+          name: "otp-20.3.8.17"
+          version: "20.3.8.17"
+          codecov_flag: "otp20.3.8.17"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
+          name: "otp-20.3.8"
+          version: "20.3.8"
+          codecov_flag: "otp20.3.8"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
+          name: "otp-20.3"
+          version: "20.3"
+          codecov_flag: "otp20.3"
+          pkg_install_cmd: "apt-get update && apt-get install"
       - rebar3_hex/build_and_test:
           name: "otp-20"
           version: "20-alpine"
           codecov_flag: "otp20"
+      - rebar3_hex/build_and_test:
+          name: "otp-19.3.6.13"
+          version: "19.3.6.13"
+          codecov_flag: "otp19.3.6.13"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
+          name: "otp-19.3.6"
+          version: "19.3.6"
+          codecov_flag: "otp19.3.6"
+          pkg_install_cmd: "apt-get update && apt-get install"
       - rebar3_hex/build_and_test:
           name: "otp-19"
           version: "19"
           codecov_flag: "otp19"
           pkg_install_cmd: "apt-get update && apt-get install"
       - rebar3_hex/build_and_test:
+          name: "otp-18.3.4"
+          version: "18.3.4"
+          codecov_flag: "otp18.3.4"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
+          name: "otp-18.3"
+          version: "18.3"
+          codecov_flag: "otp18.3"
+          pkg_install_cmd: "apt-get update && apt-get install"
+      - rebar3_hex/build_and_test:
           name: "otp-18"
           version: "18"
           codecov_flag: "otp18"
           pkg_install_cmd: "apt-get update && apt-get install"
-
