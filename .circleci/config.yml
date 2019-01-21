@@ -74,7 +74,6 @@ workflows:
           name: "otp-21"
           version: "21-alpine"
           codecov_flag: "otp21"
-          pkg_install_cmd: "apt-get update && apt-get install"
       - rebar3_hex/build_and_test:
           name: "otp-20.3.8.17"
           version: "20.3.8.17"
