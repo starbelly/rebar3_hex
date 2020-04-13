@@ -121,6 +121,10 @@ format_error({status, Status, Error}) ->
   ErrorString = errors_to_string(Errors),
   Data =  [rebar3_hex_client:pretty_print_status(Status), Message, ErrorString],
   io_lib:format("Status Code: ~s~nHex Error: ~s~n\t~s", Data);
+format_error({error,{failed_connect,[{to_address,{Host,Port}},
+                        {inet,[inet],econnrefused}]}}) ->
+    SubMsg = "Please verify that the host is online and operational.",
+    io_lib:format("Unable to connect to ~ts:~p~n~s", [Host, Port, SubMsg]);
 format_error(Reason) ->
     rebar3_hex_error:format_error(Reason).
 
