@@ -135,6 +135,8 @@ format_error({revert, {unauthorized, _Res}}) ->
     "Error reverting docs : Not authorized";
 format_error({revert, {not_found, _Res}}) ->
     "Error reverting docs : Package or Package Version not found";
+format_error({revert, {ok, nil}}) ->
+    "Unable revert docs : docs do not appear to exist";
 format_error(Reason) ->
     rebar3_hex_error:format_error(Reason).
 
